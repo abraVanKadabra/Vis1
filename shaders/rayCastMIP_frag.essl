@@ -1,47 +1,57 @@
 varying vec2 tex;
 
-precision highp sampler2D;
 uniform sampler2D frontTexture;
 uniform sampler2D backTexture;
+precision highp sampler2D;
 
 precision highp sampler3D;
 uniform sampler3D volumeTexture;
 
+
+
 void main() {
-    vec3 startPosition = texture(frontTexture, tex).rgb;
-    vec3 currentPosition = startPosition;
-    vec3 endPosition = texture(backTexture, tex).rgb;
-    vec3 rayDirection = endPosition - startPosition;
+
+    vec3 startPos = texture(frontTexture, tex).rgb;
+    vec3 currentPos = startPos;
+    vec3 endPos = texture(backTexture, tex).rgb;
+    vec3 rayDirection = endPos - startPos;
     vec3 r = normalize(rayDirection);
 
     float steps = 1024.0;
     float stepSize = (length(rayDirection)) / steps;
-
-    float outputDensity = 0.0;
     float currentDensity;
+    float outputDensity = 0.0;
 
-    // Ecken wenn der Unterschied irrelevant ist
+
+    // corners if difference gets to small
     float raysSquared = dot(rayDirection, rayDirection);
     if (raysSquared < 0.000001) {
         gl_FragColor = vec4 (outputDensity,outputDensity,outputDensity,1.0);
         return;
     }
 
-    for (int i = 0; i < 1024; i++){
-        vec3 inside = currentPosition - startPosition;
 
-        //noch innerhalb des Würfels?
-        if (dot(inside, inside) > raysSquared) {
+    // loop for each ray step
+    for (int i = 0; i < 1024; i++){
+        vec3 currentRayPos = currentPos - startPos;
+
+        //still inside?
+        if (dot(currentRayPos, currentRayPos) > raysSquared) {
             break;
         }
 
-        currentDensity = texture(volumeTexture, currentPosition.xyz).r;
+        currentDensity = texture(volumeTexture, currentPos.xyz).r;
+
+        //MIP
         if (currentDensity > outputDensity) {
             outputDensity = currentDensity;
         }
 
-        //next position
-        currentPosition = currentPosition + (stepSize * r);
+        //next step
+        currentPos = currentPos + (stepSize * r);
     }
+
+
+
     gl_FragColor = vec4 (outputDensity,outputDensity,outputDensity,1.0);
 }
