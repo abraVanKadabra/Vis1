@@ -23,6 +23,12 @@ let testShader = null;
 
 let volumeCubeShader = null;
 
+let bufferTextureBack = null;
+let bufferTextureFront = null;
+
+let sceneBackFBO = null;
+let sceneFrontFBO = null;
+
 /**
  * Load all data and initialize UI here.
  */
@@ -87,21 +93,31 @@ async function resetVis(){
     const materialBack = volumeCubeShaderBack.material;
     await volumeCubeShaderBack.load();
     const meshBack = new THREE.Mesh(volumeCube, materialBack);
-    //TODO fbo
-    //const fboBack = new THREE.BufferGeometry()
-    const bufferTextureBack = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+    //fbo
+    sceneBackFBO = new THREE.Scene().add(meshBack);
+    bufferTextureBack = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+
+
 
     //front
     const volumeCubeShaderFront = new VolumeCubeShader(true);
     await volumeCubeShaderFront.load();
     const materialFront = volumeCubeShaderFront.material;
     const meshFront = new THREE.Mesh(volumeCube, materialFront);
+    bufferTextureFront = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+    //fbo
+    sceneFrontFBO = new THREE.Scene().add(meshFront);
+    bufferTextureFront = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+
+
 
     //data texture
     const dataTexture = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
     dataTexture.type = THREE.FloatType;
     dataTexture.format = THREE.RedFormat;
     dataTexture.needsUpdate = true;
+
+
 
 
     scene.add(meshBack)
@@ -119,6 +135,15 @@ async function resetVis(){
 function paint(){
     if (volume) {
         orbitCamera.update();
+
+        renderFBO(sceneBackFBO, bufferTextureBack)
+        renderFBO(sceneFrontFBO, bufferTextureFront)
         renderer.render(scene, camera);
     }
+}
+
+function renderFBO(scene, renderTarget) {
+    renderer.setRenderTarget(renderTarget);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
 }
