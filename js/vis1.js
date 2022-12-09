@@ -22,6 +22,7 @@ let fileInput = null;
 let testShader = null;
 
 let volumeCubeShader = null;
+let rayCastingShader = null;
 
 let bufferTextureBack = null;
 let bufferTextureFront = null;
@@ -104,7 +105,6 @@ async function resetVis(){
     await volumeCubeShaderFront.load();
     const materialFront = volumeCubeShaderFront.material;
     const meshFront = new THREE.Mesh(volumeCube, materialFront);
-    bufferTextureFront = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
     //fbo
     sceneFrontFBO = new THREE.Scene().add(meshFront);
     bufferTextureFront = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
@@ -119,8 +119,20 @@ async function resetVis(){
 
 
 
+    // pass textures to ray casting shader and render the result on a plane
+    const plane = new THREE.PlaneGeometry(2, 2);
+    rayCastingShader = new RaycastingShader(bufferTextureFront.texture, bufferTextureBack.texture, dataTexture);
+    const rayResultMaterial = rayCastingShader.material;
+    await rayCastingShader.load();
+    let volumeResult = new THREE.Mesh(plane, rayResultMaterial);
+    scene.add(volumeResult);
 
-    scene.add(meshBack)
+
+
+
+
+
+   // scene.add(meshBack)
 
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0,0,0), 2*volume.max, renderer.domElement);
