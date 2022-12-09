@@ -104,7 +104,7 @@ async function resetVis(){
     dataTexture.needsUpdate = true;
 
 
-    scene.add(meshFront)
+    scene.add(meshBack)
 
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0,0,0), 2*volume.max, renderer.domElement);
