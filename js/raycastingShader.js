@@ -1,6 +1,6 @@
 class RaycastingShader extends Shader{
     constructor(frontTexture, backTexture, volumeTexture){
-        super("rayCastMIP_vert", "rayCastMIP_frag");
+        super("rayCast_vert_mip", "rayCast_frag_mip");
 
         this.setUniform("frontTexture", frontTexture);
         this.setUniform("backTexture", backTexture);

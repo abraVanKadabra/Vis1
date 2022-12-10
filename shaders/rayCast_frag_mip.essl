@@ -2,9 +2,7 @@ varying vec2 tex;
 
 uniform highp sampler2D frontTexture;
 uniform highp sampler2D backTexture;
-//precision highp sampler2D;
 
-//precision highp sampler3D;
 uniform highp sampler3D volumeTexture;
 
 
