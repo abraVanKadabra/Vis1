@@ -1,0 +1,42 @@
+varying vec2 tex;
+
+uniform highp sampler2D frontTexture;
+uniform highp sampler2D backTexture;
+uniform highp sampler3D volumeTexture;
+
+void main() {
+    float isoValue = 0.3;
+
+    vec3 currentPos = texture(frontTexture, tex).rgb;
+    vec3 nextPos;
+    float currentDensity;
+    float nextDensity;
+
+
+    vec3 rayDirection = texture(backTexture, tex).rgb - texture(frontTexture, tex).rgb;
+    vec3 r = normalize(rayDirection);
+
+    // corners if difference gets to small
+    float raysSquared = dot(rayDirection, rayDirection);
+    if (raysSquared < 0.000001) {
+        return;
+    }
+
+    int steps = 1024;
+    float stepSize = (length(rayDirection)) / float(steps);
+    for (int i = 0; i < steps; i++){
+        currentDensity = texture(volumeTexture, currentPos.xyz).r;
+        nextDensity = texture(volumeTexture, (currentPos + (stepSize * r)).xyz).r;
+        nextPos = currentPos + (stepSize * r);
+
+        //first-hit-compositing
+        if (currentDensity < isoValue && isoValue < nextDensity) {
+            gl_FragColor = vec4(mix(currentPos, nextPos, isoValue), 1.0);
+            return;
+        }
+
+        //next step
+        currentPos = currentPos + (stepSize * r);
+    }
+
+}

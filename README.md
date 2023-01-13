@@ -45,3 +45,11 @@ Recommended code editor: Visual Studio Code (free): https://code.visualstudio.co
 Install syntax highlighting for shading languages: https://marketplace.visualstudio.com/items?itemName=slevesque.shader
 
 Enable syntax highlighting: open shader file --> in the bar on the bottom right, switch from plain text to GLSL.  
+
+## Implemented Functionalities
+
+Added Implementation of task 1 (Direct Volume Rendering):
+  - volume rendering
+  - Two-Pass-Raycasting
+  - MIP
+Implementation of task 3 (Fist-Hit Composing)

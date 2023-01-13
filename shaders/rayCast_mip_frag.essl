@@ -2,10 +2,7 @@ varying vec2 tex;
 
 uniform highp sampler2D frontTexture;
 uniform highp sampler2D backTexture;
-
 uniform highp sampler3D volumeTexture;
-
-
 
 void main() {
 
@@ -15,32 +12,24 @@ void main() {
     vec3 rayDirection = endPos - startPos;
     vec3 r = normalize(rayDirection);
 
-    float steps = 1024.0;
-    float stepSize = (length(rayDirection)) / steps;
+    
     float currentDensity;
-    float outputDensity = 0.0;
+    float outputDensity;
 
 
     // corners if difference gets to small
     float raysSquared = dot(rayDirection, rayDirection);
     if (raysSquared < 0.000001) {
-        gl_FragColor = vec4 (outputDensity,outputDensity,outputDensity,1.0);
         return;
     }
 
-
+    int steps = 1024;
+    float stepSize = (length(rayDirection)) / float(steps);
     // loop for each ray step
-    for (int i = 0; i < 1024; i++){
-        vec3 currentRayPos = currentPos - startPos;
-
-        //still inside?
-        if (dot(currentRayPos, currentRayPos) > raysSquared) {
-            break;
-        }
-
+    for (int i = 0; i < steps; i++){
         currentDensity = texture(volumeTexture, currentPos.xyz).r;
 
-        //MIP
+        //mip
         if (currentDensity > outputDensity) {
             outputDensity = currentDensity;
         }
@@ -49,7 +38,5 @@ void main() {
         currentPos = currentPos + (stepSize * r);
     }
 
-
-
-    gl_FragColor = vec4 (outputDensity,outputDensity,outputDensity,1.0);
+    gl_FragColor = vec4(outputDensity,outputDensity,outputDensity,1.0);
 }

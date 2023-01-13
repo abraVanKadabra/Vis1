@@ -17,6 +17,10 @@ body {
     flex: 2;
 }
 
+#histogramContainer{
+    flex: 2;
+}
+
 #tfContainer{
     flex: 1;
 }
