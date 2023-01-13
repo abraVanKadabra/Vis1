@@ -39,7 +39,7 @@ let sceneFrontFBO = null;
 function init() {
     // volume viewer
     container = document.getElementById("viewContainer");
-    canvasWidth = window.innerWidth * 0.7;
+    canvasWidth = window.innerWidth * 0.5;
     canvasHeight = window.innerHeight * 0.7;
 
     //histogram

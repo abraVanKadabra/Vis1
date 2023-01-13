@@ -14,7 +14,7 @@ body {
 }
 
 #viewContainer{
-    flex: 2;
+    flex: 1;
 }
 
 #histogramContainer{
@@ -22,7 +22,7 @@ body {
 }
 
 #tfContainer{
-    flex: 1;
+    flex: 2;
 }
 
 .dot{
