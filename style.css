@@ -16,14 +16,18 @@ body {
 #viewContainer{
     flex: 1;
 }
+#editorContainer{
+    flex: 1;
+}
 
 #histogramContainer{
-    flex: 2;
+    flex: 1;
 }
 
 #tfContainer{
-    flex: 2;
+    flex: 1;
 }
+
 
 .dot{
     height: 5px;

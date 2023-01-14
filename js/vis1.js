@@ -18,11 +18,12 @@
 let renderer, camera, scene, orbitCamera;
 let canvasWidth, canvasHeight = 0;
 let container = null;
+
 let histoContainer = null;
 
 let volume = null;
 let fileInput = null;
-let testShader = null;
+let dataTexture = null;
 
 let volumeCubeShader = null;
 let rayCastingShader = null;
@@ -39,11 +40,8 @@ let sceneFrontFBO = null;
 function init() {
     // volume viewer
     container = document.getElementById("viewContainer");
-    canvasWidth = window.innerWidth * 0.5;
+    canvasWidth = window.innerWidth * 0.7;
     canvasHeight = window.innerHeight * 0.7;
-
-    //histogram
-
 
     // WebGL renderer
     renderer = new THREE.WebGLRenderer();
@@ -78,7 +76,6 @@ function readFile() {
  */
 async function resetVis() {
 
-    drawHistogram(volume.voxels);
 
     // create new empty scene and perspective camera
     scene = new THREE.Scene();
@@ -109,11 +106,11 @@ async function resetVis() {
     });
 
     //data texture
-    const dataTexture = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
+    dataTexture = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
     dataTexture.type = THREE.FloatType;
     dataTexture.format = THREE.RedFormat;
     dataTexture.needsUpdate = true;
-    rayCastingShader = new RaycastingShader("rayCast_firstHit_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture);
+    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);
@@ -125,6 +122,8 @@ async function resetVis() {
 
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
+
+    drawHistogram(volume.voxels);
 
     // init paint loop
     requestAnimationFrame(paint);
@@ -149,12 +148,71 @@ function renderFBO(scene, renderTarget) {
     renderer.setRenderTarget(null);
 }
 
+async function updateShader(fragShaderProgram) {
+    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture);
+
+    // pass textures to ray casting shader and render the result on a plane
+    const plane = new THREE.PlaneGeometry(2, 2);
+    const rayResultMaterial = rayCastingShader.material;
+    await rayCastingShader.load();
+    const volumeResult = new THREE.Mesh(plane, rayResultMaterial);
+    scene = new THREE.Scene();
+    scene.add(volumeResult);
+
+
+    // our camera orbits around an object centered at (0,0,0)
+    orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
+}
+
 function drawHistogram(data) {
 
     histoContainer = document.getElementById("histogramContainer");
-    const margin = {top: 10, right: 30, bottom: 30, left: 40};
-    const width = 230 - margin.left - margin.right;
-    const height = 200 - margin.top - margin.bottom;
+    const width = 400;
+    const height = 400;
+    const margin = 50;
+    const svg = d3.select(histoContainer)
+        .append("svg")
+        .attr("width",  width )
+        .attr("height", height);
+
+    const x = d3.scaleLinear()
+        .domain([0.0, 1.0])
+        .range([margin, width-margin]);
+
+    const y = d3.scaleLinear()
+        .domain([0.0, 1.0])
+        .range([height-margin, margin]);
+
+    svg
+        .append("g")
+        .attr("transform", `translate(${0}, ${height-margin})`)
+        .attr("id", "xAxis")
+        .call(d3.axisBottom(x));
+    svg
+        .append("text")
+        .style("fill", "white")
+        .text("density")
+        .attr("x", width-(margin*2))
+        .attr("y", height-10)
+
+
+
+    svg
+        .append("g")
+        .attr("transform", `translate(${margin},${0})`)
+        .attr("id", "yAxis")
+        .call(d3.axisLeft(y));
+    svg
+        .append("text")
+        .style("fill", "white")
+        .text("intensity")
+        .attr("transform", `translate(${10},${margin*2})rotate(270)`)
+
+
+    /*
+    const margin = {top: 10, right: 60, bottom: 30, left: 40};
+    const width = 400 - margin.left - margin.right;
+    const height = 250 - margin.top - margin.bottom;
     const svg = d3.select(histoContainer)
         .append("svg")
         .attr("width",  width + margin.left + margin.right)
@@ -169,19 +227,35 @@ function drawHistogram(data) {
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x));
 
+    svg.append("text")
+        .style()
+        .text("intensity")
+        .attr("x", width)
+        .attr("y", height);
+
+
+
+    const histogram = d3.histogram()
+        .domain(x.domain())
+        .thresholds(x.ticks(100));
+
+    const bins = histogram(data);
+
     const y = d3.scaleLinear()
-        .domain([0.0, 1.0])   // d3.hist has to be called before the Y axis obviously
+        .domain([0.0, 1.0])
         .range([height, 0]);
     svg.append("g")
         .call(d3.axisLeft(y));
-    /*
-    const histogram = d3.histogram()
-        .value(function(d) { return d.price; })   // I need to give the vector of value
-        .domain(x.domain())  // then the domain of the graphic
-        .thresholds(x.ticks(70)); // then the numbers of bin
-
-    const bins = histogram(data);
-     */
 
 
+    svg.selectAll("rect")
+        .data(bins)
+        .join("rect")
+        .attr("x", 1)
+        .attr("transform", function(d) { return `translate(${x(d.x0)} , ${y(d.length)})`}) //statt zweitem parameter height zum umdrehen
+        .attr("width", function(d) { return x(d.x1) - x(d.x0) -1})
+        .attr("height", function(d) {
+            return height - y(d.length) })
+        .style("fill", "#69b3a2")
+    */
 }

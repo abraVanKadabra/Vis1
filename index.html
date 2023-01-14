@@ -30,19 +30,22 @@
 <h2>Jolanda Manser, Noah Krennmair</h2>
 
 <!-- data selector -->
-<p>Select your data here: <input id="upload" type="file"></p>
-
+<p style="display: inline-block">Select your data here: <input id="upload" type="file"></p>
+<div style="display: inline-block; float: right; margin-right: 200px">
+    <button onclick="updateShader('rayCast_mip_frag')">mip</button>
+    <button onclick="updateShader('rayCast_firstHit_frag')">firstHit</button>
+</div>
 <div class="container">
 
     <!-- volume rendering container -->
     <div id="viewContainer"></div>
 
-    <div>
-        <!-- container for histogram -->
-        <div id="histogramContainer" style="float: bottom"></div>
+    <div id="editorContainer">
+        <div id="histogramContainer"></div>
 
-        <!-- container for interactive transfer function -->
+
         <div id="tfContainer"></div>
+
     </div>
 </div>
 
