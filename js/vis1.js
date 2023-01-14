@@ -120,6 +120,10 @@ function readFile() {
         if (resetCalled) {
             let rect = svg.selectAll("rect");
             rect.remove();
+            let circle = svg.selectAll("circle");
+            circle.remove();
+            let line = svg.selectAll("line");
+            line.remove();
         }
 
 
@@ -136,7 +140,7 @@ function setIsoValue() {
     svg.on("click", function (event) {
         const xy = d3.pointer(event, g.node());
         //console.log(xy);
-        if (xy[0] > 50 && xy[0] < 450) {
+        if (xy[0] > margin && xy[0] < histogramWidth - margin && xy[1] > margin && xy[1] < histogramHeight/2 - margin) {
 
             const isoValue = (xy[0] - 50) / 400;
             console.log(isoValue);
@@ -254,7 +258,6 @@ function drawHistogram(data) {
         .thresholds(x.ticks(100));
 
     const bins = histogram(data);
-    console.log(bins);
 
     const yHist = d3.scalePow()
         .range([histogramHeight / 2, 0])
@@ -274,8 +277,7 @@ function drawHistogram(data) {
         .attr("transform", function (d) {
             return "translate(" + x(d.x0) + "," + 300 + ")";
         })
-        .transition()
-        .duration(500)
+
         .attr("width", function (d) {
             if ((x(d.x1) - x(d.x0)) === 0) { //no negative values
                 return 0;
@@ -285,7 +287,9 @@ function drawHistogram(data) {
         .attr("height", function (d) {
             return (histogramHeight / 2) - yHist(d.length);
         })
-        .style("fill", "#69b4a2");
+        .transition()
+        .duration(350)
+        .style("fill", "rgb(" + r + "," + gg + ", " + b + ")");
 }
 
 
@@ -303,23 +307,17 @@ function drawCircle(container, x, y) {
     }
 
     g.append('circle')
-        .attr('fill', '#ccc')
+        .attr('fill', "rgb(" + r + "," + gg + ", " + b + ")")
         .attr('cx', x)
         .attr('cy', y)
         .attr('r', 10)
-        .attr('stroke', '#ccc')
-        .attr('cursor', 'pointer')
-        .attr('class', 'controlPoint')
-        .on("click", null)
-        .on("dblclick", e => {
-            removeControlPoint(e, x);
-        })
+
 
     g.append('line')
         .style("stroke", "#ccc")
         .style("stroke-width", 1)
         .attr("x1", x)
-        .attr("y1", y)
+        .attr("y1", y+10)
         .attr("x2", x)
         .attr("y2", histogramHeight/2 - margin);
 }
