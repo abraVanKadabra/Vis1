@@ -166,96 +166,44 @@ async function updateShader(fragShaderProgram) {
 
 function drawHistogram(data) {
 
-    histoContainer = document.getElementById("histogramContainer");
-    const width = 400;
-    const height = 400;
-    const margin = 50;
-    const svg = d3.select(histoContainer)
-        .append("svg")
-        .attr("width",  width )
-        .attr("height", height);
 
-    const x = d3.scaleLinear()
-        .domain([0.0, 1.0])
-        .range([margin, width-margin]);
-
-    const y = d3.scaleLinear()
-        .domain([0.0, 1.0])
-        .range([height-margin, margin]);
-
-    svg
-        .append("g")
-        .attr("transform", `translate(${0}, ${height-margin})`)
-        .attr("id", "xAxis")
-        .call(d3.axisBottom(x));
-    svg
-        .append("text")
-        .style("fill", "white")
-        .text("density")
-        .attr("x", width-(margin*2))
-        .attr("y", height-10)
-
-
-
-    svg
-        .append("g")
-        .attr("transform", `translate(${margin},${0})`)
-        .attr("id", "yAxis")
-        .call(d3.axisLeft(y));
-    svg
-        .append("text")
-        .style("fill", "white")
-        .text("intensity")
-        .attr("transform", `translate(${10},${margin*2})rotate(270)`)
-
-
-    /*
-    const margin = {top: 10, right: 60, bottom: 30, left: 40};
-    const width = 400 - margin.left - margin.right;
-    const height = 250 - margin.top - margin.bottom;
-    const svg = d3.select(histoContainer)
-        .append("svg")
-        .attr("width",  width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`)
-
-    const x = d3.scaleLinear()
-        .domain([0.0, 1.0])
-        .range([0, width])
-    svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
-
-    svg.append("text")
-        .style()
-        .text("intensity")
-        .attr("x", width)
-        .attr("y", height);
-
-
-
-    const histogram = d3.histogram()
+    // histogram
+    const histogram = d3
+        .histogram()
         .domain(x.domain())
-        .thresholds(x.ticks(100));
+        .thresholds(x.ticks(50));
 
     const bins = histogram(data);
+    console.log(bins);
 
-    const y = d3.scaleLinear()
-        .domain([0.0, 1.0])
-        .range([height, 0]);
-    svg.append("g")
-        .call(d3.axisLeft(y));
+    const yHist = d3.scalePow()
+        .range([histogramHeight/2, 0])
+        .domain([0, d3.max(bins, function (d) {
+            return d.length;
+        })])
+        .exponent(0.2);
 
 
     svg.selectAll("rect")
         .data(bins)
-        .join("rect")
-        .attr("x", 1)
-        .attr("transform", function(d) { return `translate(${x(d.x0)} , ${y(d.length)})`}) //statt zweitem parameter height zum umdrehen
-        .attr("width", function(d) { return x(d.x1) - x(d.x0) -1})
-        .attr("height", function(d) {
-            return height - y(d.length) })
-        .style("fill", "#69b3a2")
-    */
+        .enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", margin)
+        .attr("opacity", 0.5)
+        .attr("transform", function (d) {
+            return "translate(" + x(d.x0) + "," + 300 + ")";
+        })
+        .transition()
+        .duration(500)
+        .attr("width", function (d) {
+            if ((x(d.x1) - x(d.x0)) === 0) { //no negative values
+                return 0;
+            }
+            return (x(d.x1) - x(d.x0)) - 1;
+        })
+        .attr("height", function (d) {
+            return (histogramHeight/2) - yHist(d.length);
+        })
+        .style("fill", "#69b3a2");
 }
