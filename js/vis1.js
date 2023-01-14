@@ -120,8 +120,6 @@ function readFile() {
         if (resetCalled) {
             let rect = svg.selectAll("rect");
             rect.remove();
-           // const test = histoContainer.removeChild(histoContainer.firstChild)
-            //console.log(test);
         }
 
 
@@ -244,8 +242,6 @@ async function updateShader(fragShaderProgram, isoValue) {
     scene = new THREE.Scene();
     scene.add(volumeResult);
 
-
-    // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
 }
 
@@ -291,3 +287,55 @@ function drawHistogram(data) {
         })
         .style("fill", "#69b4a2");
 }
+
+
+function drawCircle(container, x, y) {
+    let g = container.append('g')
+
+    let circle = container.selectAll("circle");
+    let line = container.selectAll("line");
+
+    if (circle != null) {
+        circle.remove();
+    }
+    if (line != null) {
+        line.remove();
+    }
+
+    g.append('circle')
+        .attr('fill', '#ccc')
+        .attr('cx', x)
+        .attr('cy', y)
+        .attr('r', 10)
+        .attr('stroke', '#ccc')
+        .attr('cursor', 'pointer')
+        .attr('class', 'controlPoint')
+        .on("click", null)
+        .on("dblclick", e => {
+            removeControlPoint(e, x);
+        })
+
+    g.append('line')
+        .style("stroke", "#ccc")
+        .style("stroke-width", 1)
+        .attr("x1", x)
+        .attr("y1", y)
+        .attr("x2", x)
+        .attr("y2", histogramHeight/2 - margin);
+}
+
+function changeRed(value){
+    r = value;
+    document.getElementById("valRed").innerHTML = r;
+}
+
+function changeGreen(value){
+    g = value;
+    document.getElementById("valGreen").innerHTML = g;
+}
+
+function changeBlue(value){
+    b = value;
+    document.getElementById("valBlue").innerHTML = b;
+}
+
