@@ -42,7 +42,7 @@ let sceneFrontFBO = null;
 
 let resetCalled = false;
 
-let r, g, b = null;
+let r = 255, gg = 255, b = 255;
 
 /**
  * Load all data and initialize UI here.
@@ -328,8 +328,8 @@ function changeRed(value){
 }
 
 function changeGreen(value){
-    g = value;
-    document.getElementById("valGreen").innerHTML = g;
+    gg = value;
+    document.getElementById("valGreen").innerHTML = gg;
 }
 
 function changeBlue(value){
