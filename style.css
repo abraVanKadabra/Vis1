@@ -19,7 +19,9 @@ body {
 #editorContainer{
     flex: 1;
 }
-
+#colorPickerContainer{
+    flex: 1;
+}
 #histogramContainer{
     flex: 1;
 }

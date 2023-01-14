@@ -26,6 +26,7 @@ let histogramHeight, histogramWidth = null;
 let svg = null;
 let margin = null;
 
+
 let volume = null;
 let fileInput = null;
 let dataTexture = null;
@@ -40,6 +41,8 @@ let sceneBackFBO = null;
 let sceneFrontFBO = null;
 
 let resetCalled = false;
+
+let r, g, b = null;
 
 /**
  * Load all data and initialize UI here.
@@ -66,7 +69,7 @@ function init() {
         .range([margin, histogramWidth - margin]);
     svg
         .append("g")
-        .attr("transform", `translate(${0}, ${(histogramHeight/2) - margin})`)
+        .attr("transform", `translate(${0}, ${(histogramHeight / 2) - margin})`)
         .attr("id", "xAxis")
         .call(d3.axisBottom(x));
     svg
@@ -74,12 +77,11 @@ function init() {
         .style("fill", "white")
         .text("density")
         .attr("x", histogramWidth - (margin * 2))
-        .attr("y", histogramHeight/2 - 10);
-
+        .attr("y", histogramHeight / 2 - 10);
     //y axis
     y = d3.scaleLinear()
         .domain([0.0, 1.0])
-        .range([histogramHeight/2 - margin, margin]);
+        .range([histogramHeight / 2 - margin, margin]);
     svg
         .append("g")
         .attr("transform", `translate(${margin},${0})`)
@@ -101,6 +103,7 @@ function init() {
     fileInput = document.getElementById("upload");
     fileInput.addEventListener('change', readFile);
 
+    histoContainer.addEventListener('click', setIsoValue)
 }
 
 /**
@@ -125,6 +128,27 @@ function readFile() {
         resetVis();
     };
     reader.readAsArrayBuffer(fileInput.files[0]);
+}
+
+function setIsoValue() {
+    const svg = d3.select("svg");
+    const g = svg.append("g");
+
+
+    svg.on("click", function (event) {
+        const xy = d3.pointer(event, g.node());
+        //console.log(xy);
+        if (xy[0] > 50 && xy[0] < 450) {
+
+            const isoValue = (xy[0] - 50) / 400;
+            console.log(isoValue);
+            //cameraPos = [orbitCamera.camera.position.x,
+            updateShader('rayCast_firstHit_frag', isoValue);
+            drawCircle(svg, xy[0], xy[1]);
+        }
+    })
+
+
 }
 
 /**
@@ -168,7 +192,7 @@ async function resetVis() {
     dataTexture.type = THREE.FloatType;
     dataTexture.format = THREE.RedFormat;
     dataTexture.needsUpdate = true;
-    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture);
+    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, 0.3);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);
@@ -180,7 +204,6 @@ async function resetVis() {
 
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
-
 
 
     drawHistogram(volume.voxels);
@@ -210,8 +233,8 @@ function renderFBO(scene, renderTarget) {
     renderer.setRenderTarget(null);
 }
 
-async function updateShader(fragShaderProgram) {
-    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture);
+async function updateShader(fragShaderProgram, isoValue) {
+    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, isoValue);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);
@@ -228,18 +251,17 @@ async function updateShader(fragShaderProgram) {
 
 function drawHistogram(data) {
 
-
     // histogram
     const histogram = d3
         .histogram()
         .domain(x.domain())
-        .thresholds(x.ticks(50));
+        .thresholds(x.ticks(100));
 
     const bins = histogram(data);
     console.log(bins);
 
     const yHist = d3.scalePow()
-        .range([histogramHeight/2, 0])
+        .range([histogramHeight / 2, 0])
         .domain([0, d3.max(bins, function (d) {
             return d.length;
         })])
@@ -265,7 +287,7 @@ function drawHistogram(data) {
             return (x(d.x1) - x(d.x0)) - 1;
         })
         .attr("height", function (d) {
-            return (histogramHeight/2) - yHist(d.length);
+            return (histogramHeight / 2) - yHist(d.length);
         })
-        .style("fill", "#69b3a2");
+        .style("fill", "#69b4a2");
 }

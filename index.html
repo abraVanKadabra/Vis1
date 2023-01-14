@@ -31,16 +31,48 @@
 
 <!-- data selector -->
 <p style="display: inline-block">Select your data here: <input id="upload" type="file"></p>
-<div style="display: inline-block; float: right; margin-right: 200px">
-    <button onclick="updateShader('rayCast_mip_frag')">mip</button>
-    <button onclick="updateShader('rayCast_firstHit_frag')">firstHit</button>
-</div>
+
 <div class="container">
 
     <!-- volume rendering container -->
     <div id="viewContainer"></div>
 
     <div id="editorContainer">
+        <div id="shadingContainer" style="display: inline-block; margin-bottom: 25px">
+            <button onclick="updateShader('rayCast_mip_frag', 0.3)">Maximum-Intensity Projection</button>
+            <button onclick="updateShader('rayCast_firstHit_frag', 0.3)">First-Hit Compositing</button>
+        </div>
+
+        <div id="colorPickerContainer">
+            <table class="w3-table w3-border" style="width:90%; margin-right: 100px" >
+                <tbody><tr>
+                    <th>Red</th>
+                    <th>Green</th>
+                    <th>Blue</th>
+                </tr>
+                <tr>
+                    <td id="valRed">0</td>
+                    <td id="valGreen">0</td>
+                    <td id="valBlue">0</td>
+                </tr>
+                <tr>
+                    <td id="red" style="height:50px;background-color:red"></td>
+                    <td id="green" style="background-color:green"></td>
+                    <td id="blue" style="background-color:blue"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <input oninput="changeRed(this.value)" onchange="changeRed(this.value)" type="range" id="slideRed" name="slideRed" min="0" max="255">
+                    </td>
+                    <td>
+                        <input oninput="changeGreen(this.value)" onchange="changeGreen(this.value)" type="range" id="slideGreen" name="slideGreen" min="0" max="255">
+                    </td>
+                    <td>
+                        <input oninput="changeBlue(this.value)" onchange="changeBlue(this.value)" type="range" id="slideBlue" name="slideBlue" min="0" max="255">
+                    </td>
+                </tr>
+                </tbody></table>
+        </div>
         <div id="histogramContainer"></div>
 
 

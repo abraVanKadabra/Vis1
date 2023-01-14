@@ -3,9 +3,10 @@ varying vec2 tex;
 uniform highp sampler2D frontTexture;
 uniform highp sampler2D backTexture;
 uniform highp sampler3D volumeTexture;
+uniform float iso;
 
 void main() {
-    float isoValue = 0.3;
+    float isoValue = iso;
 
     vec3 currentPos = texture(frontTexture, tex).rgb;
     vec3 nextPos;
