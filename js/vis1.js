@@ -20,6 +20,11 @@ let canvasWidth, canvasHeight = 0;
 let container = null;
 
 let histoContainer = null;
+let x = null;
+let y = null;
+let histogramHeight, histogramWidth = null;
+let svg = null;
+let margin = null;
 
 let volume = null;
 let fileInput = null;
@@ -34,6 +39,8 @@ let bufferTextureFront = null;
 let sceneBackFBO = null;
 let sceneFrontFBO = null;
 
+let resetCalled = false;
+
 /**
  * Load all data and initialize UI here.
  */
@@ -43,6 +50,48 @@ function init() {
     canvasWidth = window.innerWidth * 0.7;
     canvasHeight = window.innerHeight * 0.7;
 
+    //histogram
+    histoContainer = document.getElementById("histogramContainer");
+    histogramWidth = 500;
+    histogramHeight = 800;
+    margin = 50;
+    svg = d3.select(histoContainer)
+        .append("svg")
+        .attr("width", histogramWidth)
+        .attr("height", histogramHeight);
+
+    //x axis
+    x = d3.scaleLinear()
+        .domain([0.0, 1.0])
+        .range([margin, histogramWidth - margin]);
+    svg
+        .append("g")
+        .attr("transform", `translate(${0}, ${(histogramHeight/2) - margin})`)
+        .attr("id", "xAxis")
+        .call(d3.axisBottom(x));
+    svg
+        .append("text")
+        .style("fill", "white")
+        .text("density")
+        .attr("x", histogramWidth - (margin * 2))
+        .attr("y", histogramHeight/2 - 10);
+
+    //y axis
+    y = d3.scaleLinear()
+        .domain([0.0, 1.0])
+        .range([histogramHeight/2 - margin, margin]);
+    svg
+        .append("g")
+        .attr("transform", `translate(${margin},${0})`)
+        .attr("id", "yAxis")
+        .call(d3.axisLeft(y));
+    svg
+        .append("text")
+        .style("fill", "white")
+        .text("intensity")
+        .attr("transform", `translate(${10},${margin * 2})rotate(270)`);
+
+
     // WebGL renderer
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(canvasWidth, canvasHeight);
@@ -51,6 +100,7 @@ function init() {
     // read and parse volume file
     fileInput = document.getElementById("upload");
     fileInput.addEventListener('change', readFile);
+
 }
 
 /**
@@ -63,6 +113,14 @@ function readFile() {
 
         let data = new Uint16Array(reader.result);
         volume = new Volume(data);
+
+        if (resetCalled) {
+            let rect = svg.selectAll("rect");
+            rect.remove();
+           // const test = histoContainer.removeChild(histoContainer.firstChild)
+            //console.log(test);
+        }
+
 
         resetVis();
     };
@@ -123,10 +181,14 @@ async function resetVis() {
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
 
+
+
     drawHistogram(volume.voxels);
 
     // init paint loop
     requestAnimationFrame(paint);
+
+    resetCalled = true;
 }
 
 /**
