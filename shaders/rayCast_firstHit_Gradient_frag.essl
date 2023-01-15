@@ -73,7 +73,7 @@ void main() {
 
             vec4 light = vec4(lightColor, 1.0) * diffuse * vec4(diffuseColor, 1.0) + vec4(specularColor, 1.0) * spec;
 
-            gl_FragColor = light * color;
+            gl_FragColor = light; // * color;
 
 
 

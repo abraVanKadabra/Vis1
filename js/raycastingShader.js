@@ -6,10 +6,11 @@ class RaycastingShader extends Shader{
         this.setUniform("backTexture", backTexture);
         this.setUniform("volumeTexture", volumeTexture);
         this.setUniform("iso", isoValue);
-        //this.setUniform("color", color);
+       // this.setUniform("color", color);
 
         this.setUniform("lightPos", lightPosition);
         this.setUniform("lightColor", new THREE.Vector3(1, 1, 1));
+        console.log(color);
         this.setUniform("diffuseColor", color);
         this.setUniform("specularColor", new THREE.Vector3(0.5, 0.5, 0.5));
         this.setUniform("spec", 0.25);
