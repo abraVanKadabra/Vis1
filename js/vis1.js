@@ -145,7 +145,7 @@ function setIsoValue() {
             const isoValue = (xy[0] - 50) / 400;
             console.log(isoValue);
             //cameraPos = [orbitCamera.camera.position.x,
-            updateShader('rayCast_firstHit_frag', isoValue);
+            updateShader('rayCast_firstHit_Gradient_frag', isoValue);
             drawCircle(svg, xy[0], xy[1]);
         }
     })
@@ -194,7 +194,7 @@ async function resetVis() {
     dataTexture.type = THREE.FloatType;
     dataTexture.format = THREE.RedFormat;
     dataTexture.needsUpdate = true;
-    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, 0.3);
+    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, 0.3, new THREE.Vector4(r, gg, b, 1), camera.position);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);
@@ -236,7 +236,7 @@ function renderFBO(scene, renderTarget) {
 }
 
 async function updateShader(fragShaderProgram, isoValue) {
-    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, isoValue);
+    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, isoValue, new THREE.Vector4(r, gg, b, 1), camera.position);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);

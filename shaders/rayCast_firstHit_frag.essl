@@ -4,6 +4,7 @@ uniform highp sampler2D frontTexture;
 uniform highp sampler2D backTexture;
 uniform highp sampler3D volumeTexture;
 uniform float iso;
+uniform vec4 color;
 
 void main() {
     float isoValue = iso;
@@ -32,7 +33,8 @@ void main() {
 
         //first-hit-compositing
         if (currentDensity < isoValue && isoValue < nextDensity) {
-            gl_FragColor = vec4(mix(currentPos, nextPos, isoValue), 1.0);
+            gl_FragColor = color; //vec4(mix(currentPos, nextPos, isoValue), 1.0);
+
             return;
         }
 
