@@ -149,7 +149,6 @@ function setIsoValue() {
         xyCircle = xy;
         if (xy[0] > margin && xy[0] < histogramWidth - margin && xy[1] > margin && xy[1] < histogramHeight/2 - margin) {
             isoValue = (xy[0] - 50) / 400;
-            console.log(isoValue);
             updateShader('rayCast_firstHit_Gradient_frag', isoValue);
             drawCircle(svg);
         }
