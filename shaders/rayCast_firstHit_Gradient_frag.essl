@@ -9,7 +9,6 @@ uniform highp sampler2D frontTexture;
 uniform highp sampler2D backTexture;
 uniform highp sampler3D volumeTexture;
 uniform float iso;
-//uniform vec4 color;
 
 
 
@@ -21,12 +20,17 @@ uniform float spec;
 
 
 vec3 calculateGradient(vec3 pos) {
+
     vec3 grad;
+
     grad.x = texture(volumeTexture, pos + vec3(0.01, 0.0, 0.0)).r - texture(volumeTexture, pos - vec3(0.01, 0.0, 0.0)).r;
     grad.y = texture(volumeTexture, pos + vec3(0.0, 0.01, 0.0)).r - texture(volumeTexture, pos - vec3(0.0, 0.01, 0.0)).r;
     grad.z = texture(volumeTexture, pos + vec3(0.0, 0.0, 0.01)).r - texture(volumeTexture, pos - vec3(0.0, 0.0, 0.01)).r;
+
     return normalize(-grad);
 }
+
+
 
 void main() {
 
@@ -38,7 +42,6 @@ void main() {
     vec3 nextPos;
     float currentDensity;
     float nextDensity;
-
 
     vec3 rayDirection = texture(backTexture, tex).rgb - texture(frontTexture, tex).rgb;
     vec3 r = normalize(rayDirection);
@@ -61,7 +64,7 @@ void main() {
 
 
 
-             // ------------- Gradient -----------------
+            // ------------- Gradient -----------------
 
             vec3 N = calculateGradient(currentPos);
             vec3 L = normalize(lightDir);
@@ -69,17 +72,10 @@ void main() {
             vec3 H = normalize(L + V);
 
             float diffuse = max(dot(N, L), 0.0);
-            //float specular = pow(max(dot(N, H), 0.0), shininess);
 
             vec4 light = vec4(lightColor, 1.0) * diffuse * vec4(diffuseColor, 1.0) + vec4(specularColor, 1.0) * spec;
 
-            gl_FragColor = light; // * color;
-
-
-
-
-            //gl_FragColor = vec4(mix(currentPos, nextPos, isoValue), 1.0);
-
+            gl_FragColor = light;
 
 
             return;

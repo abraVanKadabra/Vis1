@@ -53,3 +53,7 @@ Added Implementation of task 1 (Direct Volume Rendering):
   - Two-Pass-Raycasting
   - MIP
 Implementation of task 3 (Fist-Hit Composing)
+  - First-Hit Composing
+  - Animated Transitions
+  - Interactive Editor and Histogram
+  - Gradient and Shading

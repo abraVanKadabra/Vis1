@@ -6,6 +6,9 @@ uniform highp sampler3D volumeTexture;
 uniform float iso;
 uniform vec4 color;
 
+
+// FirstHit without Gradient,
+// not in use
 void main() {
     float isoValue = iso;
 

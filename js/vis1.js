@@ -13,6 +13,8 @@
  * @author Manuela Waldner
  * @author Laura Luidolt
  * @author Diana Schalko
+ * @author Noah Krennmair
+ * @author Jolanda Manser
  */
 
 let renderer, camera, scene, orbitCamera;
@@ -109,6 +111,7 @@ function init() {
     histoContainer.addEventListener('click', setIsoValue)
 }
 
+
 /**
  * Handles the file reader. No need to change anything here.
  */
@@ -128,37 +131,35 @@ function readFile() {
             let line = svg.selectAll("line");
             line.remove();
         }
-
-
         resetVis();
     };
     reader.readAsArrayBuffer(fileInput.files[0]);
 }
 
+/**
+ * Sets the IsoValue for First-Hit Composing
+ *
+ */
 function setIsoValue() {
     const svg = d3.select("svg");
     const g = svg.append("g");
-
 
     svg.on("click", function (event) {
         const xy = d3.pointer(event, g.node());
         xyCircle = xy;
         if (xy[0] > margin && xy[0] < histogramWidth - margin && xy[1] > margin && xy[1] < histogramHeight/2 - margin) {
-
             isoValue = (xy[0] - 50) / 400;
             console.log(isoValue);
             updateShader('rayCast_firstHit_Gradient_frag', isoValue);
             drawCircle(svg);
         }
     })
-
-
 }
+
 
 /**
  * Construct the THREE.js scene and update histogram when a new volume is loaded by the user.
  *
- * Currently renders the bounding box of the volume.
  */
 async function resetVis() {
 
@@ -209,7 +210,6 @@ async function resetVis() {
     // our camera orbits around an object centered at (0,0,0)
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
 
-
     drawHistogram(volume.voxels);
 
     // init paint loop
@@ -217,6 +217,7 @@ async function resetVis() {
 
     resetCalled = true;
 }
+
 
 /**
  * Render the scene and update all necessary shader information.
@@ -231,12 +232,20 @@ function paint() {
     }
 }
 
+
 function renderFBO(scene, renderTarget) {
     renderer.setRenderTarget(renderTarget);
     renderer.render(scene, camera);
     renderer.setRenderTarget(null);
 }
 
+
+/**
+ * Updates the Shader
+ * @param fragShaderProgram ShaderProgramm
+ * @param isoValue for First-Hit Composing
+ *
+ */
 async function updateShader(fragShaderProgram, isoValue) {
     rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, isoValue, new THREE.Vector3(r, gg, b), camera.position);
 
@@ -251,6 +260,12 @@ async function updateShader(fragShaderProgram, isoValue) {
     orbitCamera = new OrbitCamera(camera, new THREE.Vector3(0, 0, 0), 2 * volume.max, renderer.domElement);
 }
 
+
+/**
+ * Draws the Histogram
+ * @param data for the Historgram
+ *
+ */
 function drawHistogram(data) {
 
     // histogram
@@ -295,25 +310,28 @@ function drawHistogram(data) {
 }
 
 
+/**
+ * Draws the Circle and Line in the Histogram
+ * @param container from the Histogram
+ */
 function drawCircle(container) {
     let g = container.append('g')
 
+    //remove existing circle an line
     let circle = container.selectAll("circle");
     let line = container.selectAll("line");
-
     if (circle != null) {
-        circle.remove();
-    }
+        circle.remove(); }
     if (line != null) {
-        line.remove();
-    }
+        line.remove(); }
 
+
+    //draw new circle and line
     g.append('circle')
         .attr('fill', "rgb(" + r + "," + gg + ", " + b + ")")
         .attr('cx', xyCircle[0])
         .attr('cy', xyCircle[1])
         .attr('r', 10)
-
 
     g.append('line')
         .style("stroke", "#ccc")
@@ -324,6 +342,11 @@ function drawCircle(container) {
         .attr("y2", histogramHeight/2 - margin);
 }
 
+
+/**
+ * Changes the Value of Red
+ * @param value Red
+ */
 function changeRed(value){
     r = value;
     document.getElementById("valRed").innerHTML = r;
@@ -332,6 +355,10 @@ function changeRed(value){
 
 }
 
+/**
+ * Changes the Value of Green
+ * @param value Green
+ */
 function changeGreen(value){
     gg = value;
     document.getElementById("valGreen").innerHTML = gg;
@@ -339,6 +366,10 @@ function changeGreen(value){
     drawCircle(d3.select("svg"));
 }
 
+/**
+ * Changes the Value of Blue
+ * @param value Blue
+ */
 function changeBlue(value){
     b = value;
     document.getElementById("valBlue").innerHTML = b;
