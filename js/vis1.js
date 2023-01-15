@@ -43,6 +43,9 @@ let sceneFrontFBO = null;
 let resetCalled = false;
 
 let r = 255, gg = 255, b = 255;
+let isoValue;
+let xyCircle;
+
 
 /**
  * Load all data and initialize UI here.
@@ -50,7 +53,7 @@ let r = 255, gg = 255, b = 255;
 function init() {
     // volume viewer
     container = document.getElementById("viewContainer");
-    canvasWidth = window.innerWidth * 0.7;
+    canvasWidth = window.innerWidth * 0.6;
     canvasHeight = window.innerHeight * 0.7;
 
     //histogram
@@ -139,14 +142,13 @@ function setIsoValue() {
 
     svg.on("click", function (event) {
         const xy = d3.pointer(event, g.node());
-        //console.log(xy);
+        xyCircle = xy;
         if (xy[0] > margin && xy[0] < histogramWidth - margin && xy[1] > margin && xy[1] < histogramHeight/2 - margin) {
 
-            const isoValue = (xy[0] - 50) / 400;
+            isoValue = (xy[0] - 50) / 400;
             console.log(isoValue);
-            //cameraPos = [orbitCamera.camera.position.x,
             updateShader('rayCast_firstHit_Gradient_frag', isoValue);
-            drawCircle(svg, xy[0], xy[1]);
+            drawCircle(svg);
         }
     })
 
@@ -165,7 +167,7 @@ async function resetVis() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasHeight, 0.1, 1000);
 
-    const volumeCube = new THREE.BoxGeometry(volume.width, volume.height, volume.depth);
+    const volumeCube = new THREE.BoxBufferGeometry(volume.width, volume.height, volume.depth);
 
     //back
     const volumeCubeShaderBack = new VolumeCubeShader(false);
@@ -194,7 +196,7 @@ async function resetVis() {
     dataTexture.type = THREE.FloatType;
     dataTexture.format = THREE.RedFormat;
     dataTexture.needsUpdate = true;
-    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, 0.3, new THREE.Vector4(r, gg, b, 1), camera.position);
+    rayCastingShader = new RaycastingShader("rayCast_mip_frag", bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, 0.3, new THREE.Vector3(r, gg, b), camera.position);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);
@@ -236,7 +238,7 @@ function renderFBO(scene, renderTarget) {
 }
 
 async function updateShader(fragShaderProgram, isoValue) {
-    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, isoValue, new THREE.Vector4(r, gg, b, 1), camera.position);
+    rayCastingShader = new RaycastingShader(fragShaderProgram, bufferTextureFront.texture, bufferTextureBack.texture, dataTexture, isoValue, new THREE.Vector3(r, gg, b), camera.position);
 
     // pass textures to ray casting shader and render the result on a plane
     const plane = new THREE.PlaneGeometry(2, 2);
@@ -289,11 +291,11 @@ function drawHistogram(data) {
         })
         .transition()
         .duration(350)
-        .style("fill", "rgb(" + r + "," + gg + ", " + b + ")");
+        .style("fill", "#69b3a2");
 }
 
 
-function drawCircle(container, x, y) {
+function drawCircle(container) {
     let g = container.append('g')
 
     let circle = container.selectAll("circle");
@@ -308,32 +310,39 @@ function drawCircle(container, x, y) {
 
     g.append('circle')
         .attr('fill', "rgb(" + r + "," + gg + ", " + b + ")")
-        .attr('cx', x)
-        .attr('cy', y)
+        .attr('cx', xyCircle[0])
+        .attr('cy', xyCircle[1])
         .attr('r', 10)
 
 
     g.append('line')
         .style("stroke", "#ccc")
         .style("stroke-width", 1)
-        .attr("x1", x)
-        .attr("y1", y+10)
-        .attr("x2", x)
+        .attr("x1", xyCircle[0])
+        .attr("y1", xyCircle[1]+10)
+        .attr("x2", xyCircle[0])
         .attr("y2", histogramHeight/2 - margin);
 }
 
 function changeRed(value){
     r = value;
     document.getElementById("valRed").innerHTML = r;
+    updateShader('rayCast_firstHit_Gradient_frag', isoValue);
+    drawCircle(d3.select("svg"));
+
 }
 
 function changeGreen(value){
     gg = value;
     document.getElementById("valGreen").innerHTML = gg;
+    updateShader('rayCast_firstHit_Gradient_frag', isoValue);
+    drawCircle(d3.select("svg"));
 }
 
 function changeBlue(value){
     b = value;
     document.getElementById("valBlue").innerHTML = b;
+    updateShader('rayCast_firstHit_Gradient_frag', isoValue);
+    drawCircle(d3.select("svg"));
 }
 
