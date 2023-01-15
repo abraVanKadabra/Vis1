@@ -43,7 +43,7 @@ let sceneFrontFBO = null;
 let resetCalled = false;
 
 let r = 255, gg = 255, b = 255;
-let isoValue;
+let isoValue = 0.3;
 let xyCircle;
 
 
